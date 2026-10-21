@@ -52,3 +52,12 @@ No navegador onde utilizou esta versão em modo local, configure o Supabase, ent
 ## Limitações de validação
 
 O build e o serviço de desenvolvimento podem ser verificados sem credenciais. Persistência real, RLS e sincronização precisam ser testadas após aplicar a migration em um projeto Supabase e configurar a conta. O projeto não está publicado automaticamente.
+
+## Recuperação de senha
+
+Em Supabase → Authentication → URL Configuration, configure:
+
+- Site URL: `https://pe41-s12-app-produtividade.vercel.app`
+- Redirect URLs: `https://pe41-s12-app-produtividade.vercel.app/**`
+
+Na tela de login, clique em **Esqueci minha senha**. O aplicativo envia o link com retorno ao endereço em que foi aberto e mostra o formulário de nova senha ao reconhecer a recuperação. Use pelo menos oito caracteres e confirme a senha. Links expirados exigem novo envio; respeite o limite de pelo menos um minuto entre pedidos. O e-mail enviado pelo painel do Supabase usa a Site URL: se ela apontar para localhost, o celular não conseguirá abrir. A configuração do painel deve ser salva separadamente do código. Links antigos podem continuar apontando para o endereço anterior; solicite um novo após corrigir a URL.
