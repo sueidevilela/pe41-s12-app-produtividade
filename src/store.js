@@ -4,12 +4,12 @@ export const supabase=url&&key?createClient(url,key):null;
 export const storageKey='florescer-demo-v1';
 export function loadLocal(){try{return JSON.parse(localStorage.getItem(storageKey))||{}}catch{return {}}}
 export async function fetchData(){
- const tables=['tarefas','habitos','habitos_registros','sessoes_foco','biblioteca','favoritos'];
+ const tables=['tarefas','habitos','habitos_registros','sessoes_foco','biblioteca','favoritos','projetos','compromissos'];
  const results=await Promise.all(tables.map(async table=>{
   const rows=[];
   for(let offset=0;;offset+=500){
    const {data,error}=await supabase.from(table).select('*').order('id').range(offset,offset+499);
-   if(error)throw error;rows.push(...data);if(data.length<500)break;
+   if(error){if(['projetos','compromissos'].includes(table)&&['42P01','PGRST205'].includes(error.code))return [table,[]];throw error;}rows.push(...data);if(data.length<500)break;
   }
   return [table,rows];
  }));

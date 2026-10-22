@@ -59,7 +59,7 @@ export default function AuthScreen({ recovery, session, initialError, onRecovere
   }
 
   return <div className="login"><form className="login-card" onSubmit={submit}>
-    <div className="brand-symbol">✿</div><h1>Florescer</h1>
+    <div className="brand-symbol">✿</div><h1>Seu espaço</h1>
     <p>Um espaço para cuidar do seu tempo.</p>
     <h2>{reset ? 'Defina sua nova senha' : forgot ? 'Recuperar acesso' : 'Bem-vinda de volta'}</h2>
     {reset && !session ? <p role="alert">Este link não é válido ou expirou. Solicite um novo e-mail pelo aplicativo.</p> : <>

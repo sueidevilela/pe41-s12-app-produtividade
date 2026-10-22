@@ -82,3 +82,16 @@ Ao abrir Tarefas, o plano do dia aparece automaticamente: pendentes com prazo at
 O resumo soma pendentes elegíveis e tarefas concluídas na data local de hoje, hábitos marcados hoje e segundos realizados em sessões salvas cuja finalização ocorreu hoje. Sessões em andamento não entram antes de serem salvas; sessões atravessando a meia-noite são atribuídas à data de finalização, sem inventar uma divisão do tempo ativo. Conclusões antigas sem data não entram em um dia arbitrário. Ao reabrir uma tarefa, ela deixa de contar como concluída.
 
 Insights usam apenas os últimos sete dias: hábitos com maior número de dias marcados (incluindo empates), quando existem registros em pelo menos três dias; média de tempo realizado em foco quando há pelo menos três sessões salvas. Sem amostra suficiente, isso é informado. Dias sem registro não são tratados como prova de não realização. Não há inferência sobre horários produtivos, personalidade ou causalidade. A leitura do histórico é paginada para não se limitar aos primeiros mil registros.
+
+## Agenda, projetos e apoio ao início
+
+A direção escolhida foi reunir funções dentro do aplicativo, sem sincronizar contas Google Agenda, Todoist ou Asana. Agenda permite cadastrar/excluir compromissos com início e fim e alternar dia/sete dias, mostrando também tarefas com prazo. Projetos têm quadros com Para começar, Em movimento e Feito. Tarefas são compartilhadas entre projeto, lista geral e plano diário, sem duplicação. Mudar para Feito registra a conclusão; reabrir segue as regras já existentes. Esta versão não oferece recorrências, notificações, sincronização externa ou importação dessas ferramentas.
+
+Aplique, em ordem e após as migrations anteriores:
+
+1. `202610220003_task_support.sql`: primeiro passo e plano se/então privados na tarefa.
+2. `202610220004_agenda_projects.sql`: projetos, compromissos e vínculo com tarefas. RLS usa o dono autenticado; a chave estrangeira composta impede associar tarefas ao projeto de outra conta.
+
+O apoio “Está difícil começar?” oferece reflexão sobre o obstáculo e um primeiro passo editável, além de plano se/então e atalho para experimentar foco por cinco minutos. Não substitui uma sessão já em andamento. As sugestões não são diagnóstico e a duração de cinco minutos é uma escolha de interface, não um resultado científico. Referências conceituais: Sirois & Pychyl (2013), DOI 10.1111/spc3.12011 (procrastinação e regulação de humor); Gollwitzer & Sheeran (2006), DOI 10.1016/S0065-2601(06)38002-1 (meta-análise de intenções de implementação). Evidência de grupo não garante resultado individual.
+
+Identidade visual provisória: verde profundo, creme, sálvia e superfícies expressivas. O nome definitivo aguarda a direção da usuária; “Meu espaço” é um rótulo provisório, não uma alegação de marca original. O nome técnico de armazenamento anterior é mantido para preservar o histórico.

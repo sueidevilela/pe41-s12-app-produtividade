@@ -28,7 +28,7 @@ export default function SecureApp({ children }) {
     });
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
-  if (!supabase) return <div className="login"><section className="login-card"><div className="brand-symbol">✿</div><h1>Florescer</h1><h2>Acesso bloqueado</h2><p>Configure a conexão com o Supabase para entrar. Nenhum dado local foi apagado.</p></section></div>;
+  if (!supabase) return <div className="login"><section className="login-card"><div className="brand-symbol">✿</div><h1>Seu espaço</h1><h2>Acesso bloqueado</h2><p>Configure a conexão com o Supabase para entrar. Nenhum dado local foi apagado.</p></section></div>;
   if (!ready) return <div className="login"><p>Verificando seu acesso…</p></div>;
   if (!session || recovery) return <AuthScreen key={recovery ? 'reset' : 'login'} session={session} recovery={recovery} initialError={error} onRecovered={() => {
     const url = new URL(location.href); url.searchParams.delete('reset'); url.hash = '';
