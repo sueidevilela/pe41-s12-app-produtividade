@@ -4,7 +4,7 @@ Aplicativo React + Vite, em JavaScript, com Tarefas, Hábitos, Foco e Biblioteca
 
 ## Desenvolvimento
 
-Requer Node 22.12+ (validado com Node 24).
+Requer Node 22.13+ (validado com Node 24).
 
 ```sh
 npm ci
@@ -118,7 +118,7 @@ Aplique **uma vez a nova migration** `supabase/migrations/202610230002_task_work
 - **Filtros:** por concluir (padrão), concluídas e todas; filtro adicional por etiqueta. **Ordenação dentro de cada seção:** conclusão, última modificação ou criação, crescente/decrescente. Datas desconhecidas ficam ao final; empates usam o identificador. A data de criação é preservada em alterações. A data de modificação é registrada por trigger a cada gravação da linha da tarefa (incluindo subtarefas e etiquetas); anexos têm metadados próprios do Storage, separados dessa ordenação. Dados antigos sem data de modificação continuam sem data até a próxima gravação.
 - **Detalhes:** clique no título para editar título, descrição, data, importância, esforço, projeto e etiquetas. Descrição é texto simples com URLs HTTP/HTTPS clicáveis; não executa HTML ou JavaScript. Até vinte etiquetas de quarenta caracteres, com filtro. Campos de apoio ao início continuam preservados.
 - **Subtarefas:** até duzentas por tarefa, com inclusão, marcação e exclusão. Conclusão independente da tarefa principal. São armazenadas como JSON na própria linha, protegidas pela mesma RLS. Alterações concorrentes dessa lista seguem a última gravação; não há edição colaborativa com resolução de conflitos.
-- **Anexos:** upload, listagem, download e exclusão, até 10 MB por arquivo e mil arquivos por tarefa pela interface. A pasta usa conta/tarefa/UUID-nome; o nome é normalizado. Downloads autenticados; sem URLs públicas ou prévia executável. Políticas exigem o dono da pasta e da tarefa; regras restritivas impedem que políticas permissivas de outros buckets abram este bucket. Excluir tarefa remove antes seus arquivos; se essa limpeza falhar, a tarefa é mantida. Como banco e Storage não compartilham transação, uma falha posterior na exclusão da tarefa pode deixá-la sem os anexos já removidos.
+- **Anexos:** upload, listagem, download e exclusão, até 10 MB por arquivo e mil arquivos por tarefa pela interface. A pasta usa conta/tarefa/UUID-nome; o nome é normalizado. Acesso autenticado; sem URLs públicas. A prévia é exibida na tarefa para os formatos suportados, sem executar HTML ou JavaScript dos arquivos. Políticas exigem o dono da pasta e da tarefa; regras restritivas impedem que políticas permissivas de outros buckets abram este bucket. Excluir tarefa remove antes seus arquivos; se essa limpeza falhar, a tarefa é mantida. Como banco e Storage não compartilham transação, uma falha posterior na exclusão da tarefa pode deixá-la sem os anexos já removidos.
 - **Projetos favoritos:** estrela persistida na conta, favoritos primeiro e filtro dedicado.
 - **Aniversários:** cadastre nome, dia e mês na Agenda. Aparecem todos os anos no calendário e no detalhe do dia; 29/02 aparece apenas em anos bissextos. São pessoais, sem projeto associado; filtros de um projeto específico não os incluem. A lista permite excluir. Não há notificações externas.
 
@@ -140,3 +140,12 @@ A versão atual do script unificado `supabase/repair_setup.sql` também inclui `
 Nos detalhes, **Repetir tarefa** oferece Não repetir, Semanal, Mensal e Anual. A primeira data ancora a série. Mensal: mesmo dia em cada mês, ajustado ao último dia quando necessário (31/01 → 28/02 → 31/03). Anual: mesmo mês e dia, ajustando 29/02 para 28/02 em anos não bissextos e retornando a 29/02 nos bissextos. As regras são idênticas na projeção do calendário e na validação do banco. Cada ocorrência tem conclusão própria. Não repetir interrompe a projeção, sem apagar as conclusões anteriores. Aniversários continuam com sua regra própria, descrita acima; esse seletor é para tarefas.
 
 Verificado: seletor e gravação com API simulada; datas mensais/anuais e próxima ocorrência; SQL local aceitando datas válidas e rejeitando datas fora da série, incluindo meses curtos e anos bissextos; repetição do script com séries já existentes. A aplicação no Supabase real continua pendente de execução do script no painel.
+
+
+## Prévia dos anexos na tarefa
+
+Após enviar um arquivo compatível, sua prévia abre automaticamente na tarefa. Para anexos anteriores, clique no nome. Imagens PNG/JPEG/GIF/WebP são identificadas pelo conteúdo e exibidas com URL temporária de memória. PDFs são renderizados em canvas por PDF.js, carregado sob demanda, com navegação por página e sem executar scripts ou ações do documento. Arquivos TXT/MD/CSV/JSON/LOG/YAML aparecem como texto escapado, com limite visual de 1 MB. HTML/SVG, documentos de escritório e outros formatos oferecem download opcional, sem execução embutida. PDFs protegidos por senha ou inválidos exibem uma mensagem com opção de baixar.
+
+O arquivo é lido pelo navegador com autenticação para renderizar a prévia; não há download automático para o dispositivo. **Baixar uma cópia** é uma ação separada. O bucket continua privado, sem mudanças no banco ou nas políticas. As prévias e URLs de memória são descartadas ao trocar de anexo, fechar a tarefa ou sair da conta. Para seleção de texto e recursos de leitura assistiva de PDFs, há download opcional para leitor apropriado. O leitor PDF adicionou `pdfjs-dist` e requer Node 22.13+ no build (validado com Node 24).
+
+Validado no navegador com Storage simulado: prévia de imagem e texto, HTML escapado/não executado, PDF real de duas páginas com navegação, abertura após upload e download somente por ação explícita. A compilação e auditoria das dependências de produção passaram. Arquivos e permissões no Supabase real continuam dependendo da configuração de anexos já existente.
