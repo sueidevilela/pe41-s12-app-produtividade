@@ -1,10 +1,12 @@
 import React from 'react';
 import StartSupport from './StartSupport';
 import { habits } from './data';
+import {dailyTasks} from './recurrence';
 import { orderedToday, explainPosition, daySummary, patternInsights } from './planning';
 export default function DayPlan({ data, today, busy, write, loaded, onFocus }) {
   if (!loaded) return <section className="panel"><p>Carregando seus registros para organizar o dia…</p></section>;
-  const tasks = orderedToday(data.tarefas, today), summary = daySummary(data, today);
+  const todayData={...data,tarefas:dailyTasks(data.tarefas,data.tarefa_ocorrencias||[],today)};
+  const tasks = orderedToday(todayData.tarefas, today), summary = daySummary(todayData, today);
   const insights = patternInsights({ ...data, habitos: data.habitos.length ? data.habitos : habits }, today);
   return <>
     <section className="panel daily-overview"><span className="eyebrow">SEU DIA EM PERSPECTIVA</span><h2>Progresso que cabe na vida.</h2>
@@ -16,7 +18,7 @@ export default function DayPlan({ data, today, busy, write, loaded, onFocus }) {
       <details className="summary-method"><summary>Como este resumo é calculado</summary><p className="muted">O dia inclui pendentes sem prazo, com prazo até hoje e tarefas concluídas hoje. O foco soma o tempo realizado nas sessões salvas na data de hoje, inclusive interrompidas; o cronômetro em andamento não entra ainda.</p>
       {data.tarefas.some(t => t.concluida && !t.concluida_em) && <p className="muted">Conclusões antigas sem data não entram no resumo diário: não sabemos em qual dia aconteceram.</p>}</details>
     </section>
-    <section className="panel next-actions"><span className="eyebrow">CLAREZA PARA COMEÇAR</span><h2>Um passo. Depois, o próximo.</h2><StartSupport task={tasks[0]} write={write} busy={busy} onFocus={onFocus}/>
+    <section className="panel next-actions"><span className="eyebrow">CLAREZA PARA COMEÇAR</span><h2>Um passo. Depois, o próximo.</h2><StartSupport task={tasks[0]?.serie_id?data.tarefas.find(t=>t.id===tasks[0].serie_id):tasks[0]} write={write} busy={busy} onFocus={onFocus}/>
       <p className="muted">Primeiro o prazo mais próximo; em empate, maior importância; depois, menor esforço. Sem prazo e esforço não informado ficam ao final do respectivo critério. Tarefas futuras ficam na lista geral abaixo.</p>
       {tasks.length ? <ol className="day-plan">{tasks.map((task, index) => <li key={task.id}>
         {index === 0 && <span className="start-here">✧ Comece por esta, se fizer sentido para você</span>}

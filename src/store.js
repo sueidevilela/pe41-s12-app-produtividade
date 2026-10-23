@@ -5,12 +5,12 @@ export const storageKey='florescer-demo-v1';
 export function loadLocal(){try{return JSON.parse(localStorage.getItem(storageKey))||{}}catch{return {}}}
 export async function fetchData(){
  const setupMissing=[];
- const tables=['tarefas','habitos','habitos_registros','sessoes_foco','biblioteca','favoritos','projetos','compromissos','tarefa_secoes','aniversarios'];
+ const tables=['tarefas','habitos','habitos_registros','sessoes_foco','biblioteca','favoritos','projetos','compromissos','tarefa_secoes','aniversarios','tarefa_ocorrencias'];
  const results=await Promise.all(tables.map(async table=>{
   const rows=[];
   for(let offset=0;;offset+=500){
    const {data,error}=await supabase.from(table).select('*').order('id').range(offset,offset+499).abortSignal(AbortSignal.timeout(15000));
-   if(error){if(['projetos','compromissos','tarefa_secoes','aniversarios'].includes(table)&&['42P01','PGRST205'].includes(error.code)){setupMissing.push(table);return [table,[]];}throw error;}rows.push(...data);if(data.length<500)break;
+   if(error){if(['projetos','compromissos','tarefa_secoes','aniversarios','tarefa_ocorrencias'].includes(table)&&['42P01','PGRST205'].includes(error.code)){setupMissing.push(table);return [table,[]];}throw error;}rows.push(...data);if(data.length<500)break;
   }
   return [table,rows];
  }));
@@ -31,7 +31,7 @@ export async function saveRow(table,row){
  const payload={...row};
  // Compatibilidade apenas para campos novos opcionais sem conteúdo. Nunca descartar informação preenchida.
  for(let attempt=0;attempt<8;attempt++){
-  const {data,error}=await supabase.from(table).upsert(payload).select().single().abortSignal(AbortSignal.timeout(15000));
+  const {data,error}=await supabase.from(table).upsert(payload,table==='tarefa_ocorrencias'?{onConflict:'user_id,tarefa_id,data'}:{}).select().single().abortSignal(AbortSignal.timeout(15000));
   if(!error)return data;
   const missing=error.code==='PGRST204'?error.message.match(/Could not find the '([^']+)' column/)?.[1]:null;
   if(table==='tarefas'&&['projeto_id','esforco','proximo_passo','plano_se_entao','concluida_em','secao'].includes(missing)&&Object.hasOwn(payload,missing)&&payload[missing]==null){delete payload[missing];continue;}

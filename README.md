@@ -123,3 +123,11 @@ Aplique **uma vez a nova migration** `supabase/migrations/202610230002_task_work
 - **Aniversários:** cadastre nome, dia e mês na Agenda. Aparecem todos os anos no calendário e no detalhe do dia; 29/02 aparece apenas em anos bissextos. São pessoais, sem projeto associado; filtros de um projeto específico não os incluem. A lista permite excluir. Não há notificações externas.
 
 Verificação desta entrega: build de produção; fluxos de interface com API simulada; aplicação e repetição do SQL em PostgreSQL local (PGlite), com schemas Supabase simulados; triggers de datas e validações; isolamento entre usuários e bloqueio de anexos anônimos nas políticas SQL. A aplicação no banco e Storage reais e a confirmação após deploy continuam necessárias.
+
+## Tarefas recorrentes semanais
+
+Aplique `supabase/migrations/202610230003_weekly_tasks.sql` após as anteriores (ou execute a versão atual do script unificado `repair_setup.sql`). Nos detalhes da tarefa, escolha a data da primeira ocorrência, ative **Tornar recorrente toda semana** e salve. O calendário exibe a série a cada sete dias, inclusive em meses/anos seguintes, sem criar cópias infinitas de tarefas. O cálculo usa datas civis, sem deslocamento de horário de verão.
+
+Cada ocorrência tem sua própria conclusão em `tarefa_ocorrencias`, com dono e data únicos, FK para a tarefa do mesmo dono e RLS. Concluir uma semana não conclui a série nem as próximas. A lista/quadro representa a ocorrência de hoje ou a próxima data a partir de hoje; o plano diário inclui a ocorrência programada para hoje. O resumo usa as conclusões registradas no dia. Ocorrências passadas permanecem no calendário; não são acumuladas como uma nova tarefa atrasada em todos os dias seguintes.
+
+Desativar a recorrência remove a projeção semanal futura; registros concluídos permanecem visíveis nas suas datas. Alterar a primeira data muda a projeção futura e mantém as conclusões já gravadas. Editar título/projeto/descrição altera a série compartilhada. Subtarefas, etiquetas e anexos pertencem à série e não são duplicados ou reiniciados a cada semana. Excluir a tarefa exclui a série e seus registros de ocorrência. Não há notificações nem execução de jobs externos.
