@@ -101,3 +101,11 @@ Identidade visual provisória: verde profundo, creme, sálvia e superfícies exp
 Abra `supabase/repair_setup.sql`, copie o conteúdo e execute no SQL Editor do projeto usado pela Vercel. O script reúne as atualizações de priorização, apoio ao início, agenda e projetos e pode ser repetido sobre o esquema inicial deste repositório. Não apaga dados ou troca seus donos; recarrega o cache da API ao concluir. Se uma estrutura diferente já existir, a transação pode falhar: preserve a mensagem para diagnóstico, sem apagar tabelas.
 
 O aplicativo agora mostra falta de tabelas de agenda/projetos, traduz erros de estrutura/permissão, leva o erro à área visível e limita requisições de dados a quinze segundos. Após um timeout, confira se o registro foi salvo antes de repetir. Tarefas simples podem ser gravadas em esquemas antigos removendo apenas campos opcionais ausentes quando seu valor for NULL; informações preenchidas nunca são descartadas para contornar um erro. Projetos exigem a tabela real e suas políticas no Supabase.
+
+## Calendário próprio e vínculos de projeto
+
+A agenda é inteiramente interna, sem integração com agendas ou gerenciadores externos. Há calendário mensal navegável, seleção de dia, visão de sete dias e filtro por projeto. Tarefas aparecem na data do prazo; sem prazo ficam em “Tarefas ainda sem data”, onde podem ser agendadas. Alterar o prazo na lista geral ou no quadro do projeto atualiza a mesma tarefa no calendário. Não se criam cópias.
+
+Compromissos podem ser vinculados a projetos ao criar ou pelo seletor no detalhe do dia, inclusive compromissos anteriores. São mostrados em cada dia que seu intervalo ocupa (fim exclusivo) e na seção de compromissos do projeto. A visão do calendário usa o fuso do dispositivo. A chave estrangeira composta exige que o projeto e o compromisso pertençam ao mesmo usuário.
+
+Para bancos já atualizados, aplique `202610230001_calendar_project_links.sql`. Se aparecer aviso de tabelas ausentes, execute **somente a versão atual de `supabase/repair_setup.sql`**, que já reúne essa alteração e as anteriores sobre a migration inicial. Esse aviso é sobre as tabelas internas no banco escolhido nas variáveis da Vercel; não é uma solicitação para conectar serviços externos. A publicação do frontend não executa SQL no Supabase automaticamente.
