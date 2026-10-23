@@ -126,8 +126,17 @@ Verificação desta entrega: build de produção; fluxos de interface com API si
 
 ## Tarefas recorrentes semanais
 
-Aplique `supabase/migrations/202610230003_weekly_tasks.sql` após as anteriores (ou execute a versão atual do script unificado `repair_setup.sql`). Nos detalhes da tarefa, escolha a data da primeira ocorrência, ative **Tornar recorrente toda semana** e salve. O calendário exibe a série a cada sete dias, inclusive em meses/anos seguintes, sem criar cópias infinitas de tarefas. O cálculo usa datas civis, sem deslocamento de horário de verão.
+Aplique `supabase/migrations/202610230003_weekly_tasks.sql` após as anteriores (ou execute a versão atual do script unificado `repair_setup.sql`). Nos detalhes da tarefa, escolha a data da primeira ocorrência, no seletor **Repetir tarefa**, escolha **Semanal** e salve. O calendário exibe a série a cada sete dias, inclusive em meses/anos seguintes, sem criar cópias infinitas de tarefas. O cálculo usa datas civis, sem deslocamento de horário de verão.
 
 Cada ocorrência tem sua própria conclusão em `tarefa_ocorrencias`, com dono e data únicos, FK para a tarefa do mesmo dono e RLS. Concluir uma semana não conclui a série nem as próximas. A lista/quadro representa a ocorrência de hoje ou a próxima data a partir de hoje; o plano diário inclui a ocorrência programada para hoje. O resumo usa as conclusões registradas no dia. Ocorrências passadas permanecem no calendário; não são acumuladas como uma nova tarefa atrasada em todos os dias seguintes.
 
 Desativar a recorrência remove a projeção semanal futura; registros concluídos permanecem visíveis nas suas datas. Alterar a primeira data muda a projeção futura e mantém as conclusões já gravadas. Editar título/projeto/descrição altera a série compartilhada. Subtarefas, etiquetas e anexos pertencem à série e não são duplicados ou reiniciados a cada semana. Excluir a tarefa exclui a série e seus registros de ocorrência. Não há notificações nem execução de jobs externos.
+
+
+## Recorrência mensal e anual
+
+A versão atual do script unificado `supabase/repair_setup.sql` também inclui `202610230004_recurrence_options.sql`. Em um banco já atualizado até a migration semanal, pode ser aplicada apenas essa nova migration. Séries semanais anteriores são preservadas e os registros de conclusão continuam na mesma tabela, com as mesmas políticas de dono.
+
+Nos detalhes, **Repetir tarefa** oferece Não repetir, Semanal, Mensal e Anual. A primeira data ancora a série. Mensal: mesmo dia em cada mês, ajustado ao último dia quando necessário (31/01 → 28/02 → 31/03). Anual: mesmo mês e dia, ajustando 29/02 para 28/02 em anos não bissextos e retornando a 29/02 nos bissextos. As regras são idênticas na projeção do calendário e na validação do banco. Cada ocorrência tem conclusão própria. Não repetir interrompe a projeção, sem apagar as conclusões anteriores. Aniversários continuam com sua regra própria, descrita acima; esse seletor é para tarefas.
+
+Verificado: seletor e gravação com API simulada; datas mensais/anuais e próxima ocorrência; SQL local aceitando datas válidas e rejeitando datas fora da série, incluindo meses curtos e anos bissextos; repetição do script com séries já existentes. A aplicação no Supabase real continua pendente de execução do script no painel.
