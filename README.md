@@ -95,3 +95,9 @@ Aplique, em ordem e após as migrations anteriores:
 O apoio “Está difícil começar?” oferece reflexão sobre o obstáculo e um primeiro passo editável, além de plano se/então e atalho para experimentar foco por cinco minutos. Não substitui uma sessão já em andamento. As sugestões não são diagnóstico e a duração de cinco minutos é uma escolha de interface, não um resultado científico. Referências conceituais: Sirois & Pychyl (2013), DOI 10.1111/spc3.12011 (procrastinação e regulação de humor); Gollwitzer & Sheeran (2006), DOI 10.1016/S0065-2601(06)38002-1 (meta-análise de intenções de implementação). Evidência de grupo não garante resultado individual.
 
 Identidade visual provisória: verde profundo, creme, sálvia e superfícies expressivas. O nome definitivo aguarda a direção da usuária; “Meu espaço” é um rótulo provisório, não uma alegação de marca original. O nome técnico de armazenamento anterior é mantido para preservar o histórico.
+
+## Se criar tarefas/projetos não funcionar
+
+Abra `supabase/repair_setup.sql`, copie o conteúdo e execute no SQL Editor do projeto usado pela Vercel. O script reúne as atualizações de priorização, apoio ao início, agenda e projetos e pode ser repetido sobre o esquema inicial deste repositório. Não apaga dados ou troca seus donos; recarrega o cache da API ao concluir. Se uma estrutura diferente já existir, a transação pode falhar: preserve a mensagem para diagnóstico, sem apagar tabelas.
+
+O aplicativo agora mostra falta de tabelas de agenda/projetos, traduz erros de estrutura/permissão, leva o erro à área visível e limita requisições de dados a quinze segundos. Após um timeout, confira se o registro foi salvo antes de repetir. Tarefas simples podem ser gravadas em esquemas antigos removendo apenas campos opcionais ausentes quando seu valor for NULL; informações preenchidas nunca são descartadas para contornar um erro. Projetos exigem a tabela real e suas políticas no Supabase.

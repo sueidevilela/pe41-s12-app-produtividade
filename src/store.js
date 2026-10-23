@@ -4,19 +4,42 @@ export const supabase=url&&key?createClient(url,key):null;
 export const storageKey='florescer-demo-v1';
 export function loadLocal(){try{return JSON.parse(localStorage.getItem(storageKey))||{}}catch{return {}}}
 export async function fetchData(){
+ const setupMissing=[];
  const tables=['tarefas','habitos','habitos_registros','sessoes_foco','biblioteca','favoritos','projetos','compromissos'];
  const results=await Promise.all(tables.map(async table=>{
   const rows=[];
   for(let offset=0;;offset+=500){
-   const {data,error}=await supabase.from(table).select('*').order('id').range(offset,offset+499);
-   if(error){if(['projetos','compromissos'].includes(table)&&['42P01','PGRST205'].includes(error.code))return [table,[]];throw error;}rows.push(...data);if(data.length<500)break;
+   const {data,error}=await supabase.from(table).select('*').order('id').range(offset,offset+499).abortSignal(AbortSignal.timeout(15000));
+   if(error){if(['projetos','compromissos'].includes(table)&&['42P01','PGRST205'].includes(error.code)){setupMissing.push(table);return [table,[]];}throw error;}rows.push(...data);if(data.length<500)break;
   }
   return [table,rows];
  }));
- return Object.fromEntries(results);
+ return {...Object.fromEntries(results),setupMissing};
 }
-export async function saveRow(table,row){const {data,error}=await supabase.from(table).upsert(row).select().single();if(error)throw error;return data;}
-export async function removeRow(table,id){const {error}=await supabase.from(table).delete().eq('id',id);if(error)throw error;}
+export function explainError(error) {
+ const code=error?.code;
+ if(/abort|timeout/i.test(error?.message||''))return 'O Supabase demorou para responder. Atualize a página para conferir se o registro foi salvo antes de tentar novamente.';
+ if(['42P01','42703','PGRST204','PGRST205'].includes(code))return 'A estrutura do Supabase ainda não acompanha esta versão do aplicativo. Execute o arquivo supabase/repair_setup.sql no SQL Editor do seu projeto e tente novamente. Seus dados existentes serão preservados.';
+ if(code==='42501')return 'Sua conta não tem permissão para esta gravação. Confira as migrations de segurança no Supabase. Não desative as políticas de acesso.';
+ if(code==='23503')return 'O projeto selecionado não está disponível para sua conta. Atualize a página e selecione um projeto seu.';
+ if(code==='23514')return 'Confira os campos: o título precisa ter texto e os valores devem respeitar os limites do formulário.';
+ if(error?.status===401||code==='PGRST301')return 'Sua sessão não é mais válida. Saia e entre novamente.';
+ return error?.message||'Não foi possível salvar. Confira sua conexão e tente novamente.';
+}
+export async function saveRow(table,row){
+ if('titulo' in row && !row.titulo?.trim())throw new Error('Escreva um título antes de salvar.');
+ const payload={...row};
+ // Compatibilidade apenas para campos novos opcionais sem conteúdo. Nunca descartar informação preenchida.
+ for(let attempt=0;attempt<8;attempt++){
+  const {data,error}=await supabase.from(table).upsert(payload).select().single().abortSignal(AbortSignal.timeout(15000));
+  if(!error)return data;
+  const missing=error.code==='PGRST204'?error.message.match(/Could not find the '([^']+)' column/)?.[1]:null;
+  if(table==='tarefas'&&['projeto_id','esforco','proximo_passo','plano_se_entao','concluida_em'].includes(missing)&&Object.hasOwn(payload,missing)&&payload[missing]==null){delete payload[missing];continue;}
+  throw error;
+ }
+ throw new Error('Não foi possível confirmar a gravação. Atualize a estrutura do Supabase.');
+}
+export async function removeRow(table,id){const {error}=await supabase.from(table).delete().eq('id',id).abortSignal(AbortSignal.timeout(15000));if(error)throw error;}
 
 // Importação explícita: uma cópia local nunca é atribuída automaticamente à primeira conta.
 export async function importLocalHistory(userId) {
